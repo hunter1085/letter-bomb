@@ -4,10 +4,10 @@
 CURRENT_DIR=$(cd `dirname $0`;pwd)
 COMPONENT_NAME=$(basename $0|cut -d'.' -f1)
 LOG_FILE=$CURRENT_DIR/$COMPONENT_NAME.log
-echo "">$LOG_FILE
+#echo "">$LOG_FILE
 HEIGHT=$(stty size | awk '{print $1}')
 WIDTH=$(stty size | awk '{print $2}')
-echo "HEIGHT=$HEIGHT" >>$LOG_FILE
+#echo "HEIGHT=$HEIGHT" >>$LOG_FILE
 
 
 START="false"
@@ -19,6 +19,7 @@ LETTERS=("A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N" "O" "P" "Q" "R"
          "~" "@" "#" "$" "%" "^" "&" "*" "(" ")" "-" "+" "_" "=" ";" ":" "<" ">" "," "." "[" "]" "{" "}" "|" '\' '"' )
 LETTER_CNT=${#LETTERS[@]}
 BOMB=()
+SCORE=0
 
 onExit(){
     echo -e "\x1b[0;0H\x1b[2J\x1b[?25h\x1b[0m" #recover the cursor
@@ -43,7 +44,7 @@ printMenu(){
 
 generateBomb(){
     local x=$(( (RANDOM % WIDTH) + 1 ))
-    local y=1
+    local y=2
     local index=$(( (RANDOM % LETTER_CNT) ))
     local letter=${LETTERS[$index]}
     local color=$(( (RANDOM % 7) + 31 ))
@@ -64,6 +65,7 @@ removeBomb(){
     if [ "$found" == "true" ];then
         unset BOMB[$i]
         BOMB=(${BOMB[@]})  #reset the array
+        ((SCORE++))
     fi
 }
 moveBomb(){
@@ -80,6 +82,7 @@ moveBomb(){
 }
 printBomb(){
     echo -e "\x1b[0;0H\x1b[2J\x1b[?25l" #clear the screen and hide the cursor
+    echo -e "\x1b[1;1HScore:$SCORE\x1b[0m"  #display the score
     for((i=0;i<${#BOMB[@]};i++));do
         local bomb=${BOMB[$i]}
         local info=(${bomb//:/ })
@@ -91,10 +94,10 @@ printBomb(){
             if [ $i -eq 0 ];then
                 echo -e "\x1b["$y";"$x"H\x1b[5m\x1b["$color"m$letter\x1b[0m"
             else
-                echo -e "\x1b["$y";"$x"H\x1b["$color"m$letter"
+                echo -e "\x1b["$y";"$x"H\x1b["$color"m$letter\x1b[0m"
             fi
         else
-            echo -e "\x1b["$y";"$x"H\x1b["$color"m$letter"
+            echo -e "\x1b["$y";"$x"H\x1b["$color"m$letter\x1b[0m"
         fi
     done
 #    echo "printBomb----BOMB=${BOMB[@]}" >>$LOG_FILE
